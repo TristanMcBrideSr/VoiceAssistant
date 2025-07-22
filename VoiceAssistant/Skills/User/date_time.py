@@ -2,7 +2,7 @@
 from datetime import datetime
 import threading
 import logging
-from SkillsManager import ArgumentParser
+from SkillLink import ArgumentParser
 
 logger = logging.getLogger(__name__)
 

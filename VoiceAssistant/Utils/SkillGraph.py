@@ -8,7 +8,7 @@ import logging
 from dotenv import load_dotenv
 from pathlib import Path
 
-from SkillsManager import SkillsManager # Dont for get to pip install SkillsManager
+from SkillLink import SkillLink # Dont for get to pip install SkillLink
 
 load_dotenv()
 
@@ -33,14 +33,14 @@ class SkillGraph:
         self.initialized = True
 
     def _initComponents(self):
-        self.skillsManager     = SkillsManager()
+        self.skillLink         = SkillLink()
         self.baseSkillsDir     = self.getDir('Skills')
         self.printCapabilities = os.getenv('SHOW_CAPABILITIES', 'False') == 'True'
         self.printMetaData     = os.getenv('SHOW_METADATA', 'False') == 'True'
         self.loadAllComponents()
 
     def getDir(self, *paths):
-        return self.skillsManager.getDir(*paths)
+        return self.skillLink.getDir(*paths)
 
     def loadAllComponents(self):
         """
@@ -51,7 +51,7 @@ class SkillGraph:
         self.userSkills  = []
         self.agentSkills = []
 
-        self.skillsManager.loadComponents(
+        self.skillLink.loadComponents(
             paths=[
                 [self.getDir(self.baseSkillsDir, 'User')],
                 [self.getDir(self.baseSkillsDir, 'Agent')],
@@ -75,7 +75,7 @@ class SkillGraph:
         skills = (
             self.userSkills
         )
-        return self.skillsManager.getComponents(skills, content)
+        return self.skillLink.getComponents(skills, content)
 
     def getAgentActions(self):
         """
@@ -85,14 +85,14 @@ class SkillGraph:
         skills = (
             self.agentSkills
         )
-        return self.skillsManager.getComponents(skills)
+        return self.skillLink.getComponents(skills)
 
     def reloadSkills(self):
         """
         Reload all skills and print any new skills added.
         """
         original = self.getMetaData()
-        self.skillsManager.reloadSkills()
+        self.skillLink.reloadSkills()
         new = self.getMetaData()
         for skill in new:
             if skill not in original:
@@ -103,7 +103,7 @@ class SkillGraph:
         metaData = (
                 self.agentSkills
         )
-        return self.skillsManager.getMetaData(metaData, self.printMetaData)
+        return self.skillLink.getMetaData(metaData, self.printMetaData)
 
     # ----- Skills -----
     def getAgentCapabilities(self):
@@ -115,14 +115,14 @@ class SkillGraph:
         capabitites = (
             self.agentSkills
         )
-        return self.skillsManager.getCapabilities(capabitites, self.printCapabilities, description)
+        return self.skillLink.getCapabilities(capabitites, self.printCapabilities, description)
 
     def checkActions(self, action: str) -> str:
         """
         Check if the given action is valid based on the agent's skills.
         Returns a string indicating whether the action is valid or not.
         """
-        return self.skillsManager.actionParser.checkActions(action)
+        return self.skillLink.actionParser.checkActions(action)
 
     def getActions(self, action: str) -> list:
         """
@@ -130,27 +130,46 @@ class SkillGraph:
         This method uses the skills manager's action parser to retrieve actions that match the given string.
         If the action is not found, it returns an empty list.
         """
-        return self.skillsManager.actionParser.getActions(action)
+        return self.skillLink.actionParser.getActions(action)
 
     def executeAction(self, actions, action):
         """
         Execute a single action based on the provided actions and action string.
         You must create your own for loop if you want to execute multiple actions.
         """
-        return self.skillsManager.actionParser.executeAction(actions, action)
+        return self.skillLink.actionParser.executeAction(actions, action)
 
     def executeActions(self, actions, action):
         """
         Execute both single and multiple actions based on the provided actions and action string.
         The for loop is handled internally, so you can pass a single action or a list of actions.
         """
-        return self.skillsManager.actionParser.executeActions(actions, action)
+        return self.skillLink.actionParser.executeActions(actions, action)
 
     def skillInstructions(self):
         """
-        Get skill instructions for the agent based on its capabilities.
+        Get skill instructions for the ava based on its capabilities.
         """
-        return self.skillsManager.skillInstructions(self.getAgentCapabilities())
+        # If you want to use the default skill instructions without examples, uncomment the next line
+        # and comment the line below it.
+        #return self.skillLink.skillInstructions(self.getAvaCapabilities())
+        return self.skillLink.skillInstructions(self.getAvaCapabilities(), self.skillExamples())
+
+    def skillExamples(self):
+        """
+        Get examples of how to use skills from your naming conventions.
+        This should be customized to match your skill naming conventions.
+        """
+        return (
+            "Single Action Examples:\n" # Don't change this line
+            "- ['getDate()']\n" # Change to match your skill naming conventions
+            "- ['getTime()']\n" # Change to match your skill naming conventions
+            "- ['getDate()', 'getTime()']\n"
+            "Skill With Sub-Action Examples:\n" # Don't change this line
+            "- ['appSkill(\"open\", \"Notepad\")']\n" # Change to match your skill naming conventions
+            "- ['appSkill(\"open\", \"Notepad\")', 'appSkill(\"open\", \"Word\")']\n"
+            "- ['weatherSkill(\"get-weather\", 47.6588, -117.4260)']\n" # Change to match your skill naming conventions
+        )
 
 
     # ----- Can be used with both skills and tools -----
@@ -159,19 +178,19 @@ class SkillGraph:
         Check if any of the arguments is a list of dictionaries.
         This indicates structured input (multi-message format).
         """
-        return self.skillsManager.isStructured(*args)
+        return self.skillLink.isStructured(*args)
 
     def handleTypedFormat(self, role: str = "user", content: str = ""):
         """
         Format content for Google GenAI APIs.
         """
-        return self.skillsManager.handleTypedFormat(role, content)
+        return self.skillLink.handleTypedFormat(role, content)
 
     def handleJsonFormat(self, role: str = "user", content: str = ""):
         """
         Format content for OpenAI APIs and similar JSON-based APIs.
         """
-        return self.skillsManager.handleJsonFormat(role, content)
+        return self.skillLink.handleJsonFormat(role, content)
 
     def formatTypedExamples(self, items):
         """
@@ -182,7 +201,7 @@ class SkillGraph:
             - list of dicts: each dict converted to Content with role, dict as text
         Returns a flat list of Content objects.
         """
-        return self.skillsManager.formatTypedExamples(items)
+        return self.skillLink.formatTypedExamples(items)
 
     def formatJsonExamples(self, items):
         """
@@ -193,7 +212,7 @@ class SkillGraph:
             - list of dicts: each dict is added individually
         Returns a flat list of message dicts.
         """
-        return self.skillsManager.formatJsonExamples(items)
+        return self.skillLink.formatJsonExamples(items)
 
     def formatExamples(self, items, formatFunc):
         """
@@ -201,7 +220,7 @@ class SkillGraph:
         Accepts string, dict, list of any mix, any nested depth.
         Silently ignores None. Converts numbers and bools to strings.
         """
-        return self.skillsManager.formatExamples(items, formatFunc)
+        return self.skillLink.formatExamples(items, formatFunc)
 
     def handleTypedExamples(self, items):
         """
@@ -212,7 +231,7 @@ class SkillGraph:
             - list of dicts: each dict converted to Content with role, dict as text
         Returns a flat list of Content objects.
         """
-        return self.skillsManager.handleTypedExamples(items)
+        return self.skillLink.handleTypedExamples(items)
 
     def handleJsonExamples(self, items):
         """
@@ -223,7 +242,7 @@ class SkillGraph:
             - list of dicts: each dict is added individually
         Returns a flat list of message dicts.
         """
-        return self.skillsManager.handleJsonExamples(items)
+        return self.skillLink.handleJsonExamples(items)
 
     def handleExamples(self, items, formatFunc):
         """
@@ -231,11 +250,11 @@ class SkillGraph:
         Accepts string, dict, list of any mix, any nested depth.
         Silently ignores None. Converts numbers and bools to strings.
         """
-        return self.skillsManager.handleExamples(items, formatFunc)
+        return self.skillLink.handleExamples(items, formatFunc)
 
     def buildGoogleSafetySettings(self, harassment="BLOCK_NONE", hateSpeech="BLOCK_NONE", sexuallyExplicit="BLOCK_NONE", dangerousContent="BLOCK_NONE"):
         """
         Construct a list of Google GenAI SafetySetting objects.
         """
-        return self.skillsManager.buildGoogleSafetySettings(harassment, hateSpeech, sexuallyExplicit, dangerousContent)
+        return self.skillLink.buildGoogleSafetySettings(harassment, hateSpeech, sexuallyExplicit, dangerousContent)
 

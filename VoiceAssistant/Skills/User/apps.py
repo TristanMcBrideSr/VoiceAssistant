@@ -2,7 +2,7 @@ import threading
 import logging
 import subprocess
 import os
-from SkillsManager import ArgumentParser
+from SkillLink import ArgumentParser
 
 logger = logging.getLogger(__name__)
 

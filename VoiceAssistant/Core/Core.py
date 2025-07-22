@@ -1,5 +1,5 @@
 """
-SkillsManager with Multiple Providers
+SkillLink with Multiple Providers
 But actions are called by the model based on the context.
 Not activated by user input.
 """

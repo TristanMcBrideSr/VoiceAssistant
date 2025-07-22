@@ -2,6 +2,6 @@ python-dotenv
 openai
 google-genai
 requests
-SkillsManager
+SkillLink
 SpeechRecognition
 pyttsx4
